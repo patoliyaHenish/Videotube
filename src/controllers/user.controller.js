@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
@@ -254,7 +255,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, "current user fetched successfully");
+    .json(new ApiResponse(200, res.user, "User fetched successfully"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -264,7 +265,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const user = user
+  const user = await user
     .findByIdAndUpdate(
       req.user._id,
       {
@@ -281,6 +282,16 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
+
+const deleteImageFromCloudinary = async (imageUrl) => {
+  try {
+    const urlParts = imageUrl.split("/");
+    const publicId = urlParts[urlParts.length - 1].split(".")[0];
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+  }
+};
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.files?.path;
@@ -305,11 +316,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     { new: true }
   ).select("-password");
 
-    return res
+  //delete a old image uploaded into the cloudinary from old image cloudinary url
+  // Delete old avatar image from Cloudinary
+  const oldAvatarUrl = user.avatar;
+  await deleteImageFromCloudinary(oldAvatarUrl);
+
+  return res
     .status(200)
-    .json(
-      new ApiResponse(200, user, "Avatar image updated successfully")
-    );
+    .json(new ApiResponse(200, user, "Avatar image updated successfully"));
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
@@ -322,7 +336,10 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!coverImage.url) {
-    throw new ApiError(400, "Error while uploading an cover image on cloudinary");
+    throw new ApiError(
+      400,
+      "Error while uploading an cover image on cloudinary"
+    );
   }
 
   const user = await User.findByIdAndUpdate(
@@ -336,10 +353,8 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   ).select("-password");
 
   return res
-  .status(200)
-  .json(
-    new ApiResponse(200, user, "Cover image updated successfully")
-  );
+    .status(200)
+    .json(new ApiResponse(200, user, "Cover image updated successfully"));
 });
 
 export {
@@ -351,5 +366,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  deleteImageFromCloudinary,
 };
