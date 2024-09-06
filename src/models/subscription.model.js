@@ -1,4 +1,4 @@
-const { Schema } = require("mongoose");
+// const { Schema } = require("mongoose");
 import mongoose, {Schema} from "mongoose";
 
 const subscriptionSchema = new Schema({
