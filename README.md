@@ -7,13 +7,10 @@ Videotube is a web application designed to allow users to explore, upload, and m
 - **User Authentication:** Secure login and registration using JWT and bcrypt.
 - **Video Uploads:** Users can upload videos with descriptions and tags.
 - **Channel Profiles:** Dynamic user channel profiles generated using MongoDB Aggregation Pipeline.
-- **Video Search and Filtering:** Efficient search functionality using MongoDB queries.
-- **Responsive Design:** Tailored for both desktop and mobile experiences.
 
 ## Technologies Used
 
 - **Backend:** Node.js, Express.js, MongoDB
-- **Frontend:** EJS, Tailwind CSS
 - **Database:** MongoDB with Mongoose
 - **Authentication:** JSON Web Token (JWT), bcrypt
 - **File Upload:** Multer
